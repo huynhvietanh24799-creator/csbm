@@ -2800,7 +2800,7 @@ body{background:
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
   background-image:linear-gradient(rgba(120,160,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,255,.05) 1px,transparent 1px);
   background-size:36px 36px;mask-image:radial-gradient(ellipse at center,#000 30%,transparent 80%)}
-main,header,.tabs,.sheet,.pv-bar{position:relative;z-index:1}
+body::before{z-index:-1}
 .pv-bar{background:linear-gradient(90deg,#0b1020,#151b33)!important;border-bottom:1px solid var(--line);font-family:"JetBrains Mono",monospace!important;letter-spacing:.04em;color:#9fb3ff!important}
 .pv-sw{background:rgba(255,255,255,.05)!important;border:1px solid var(--line)}
 .pv-sw a{color:#c7d2f0!important}.pv-sw a.on{background:linear-gradient(135deg,#ff3d57,#7a5cff)!important;color:#fff!important;box-shadow:var(--glow)}
