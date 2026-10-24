@@ -3001,23 +3001,12 @@ main{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
   function clearInd(rows){ rows.forEach(function(r){ r.classList.remove('drag-ind-top','drag-ind-bot'); }); }
   function cleanup(){
     if(!drag) return;
-    document.removeEventListener('touchmove',onDragMove);
     drag.ghost.remove();
     drag.el.classList.remove('drag-dim');
     clearInd(drag.rows);
     drag=null;
   }
-  function onDragMove(e){
-    if(!drag) return;
-    e.preventDefault();
-    var y=e.touches[0].clientY;
-    drag.ghost.style.top=(drag.ghostTop+y-drag.startY)+'px';
-    var ti=insertIdx(drag.rows,y);
-    clearInd(drag.rows);
-    if(ti<drag.rows.length) drag.rows[ti].classList.add('drag-ind-top');
-    else if(drag.rows.length) drag.rows[drag.rows.length-1].classList.add('drag-ind-bot');
-    drag.curTarget=ti;
-  }
+  /* touchstart — bắt đầu đếm 2s */
   document.addEventListener('touchstart',function(e){
     var row=e.target.closest&&e.target.closest('#bmList .row[data-open]');
     if(!row) return;
@@ -3037,12 +3026,21 @@ main{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
       document.body.appendChild(ghost);
       row.classList.add('drag-dim');
       drag={el:row,ghost:ghost,rows:rows,fromIdx:fromIdx,ghostTop:rect.top,startY:startY,curTarget:fromIdx};
-      document.addEventListener('touchmove',onDragMove,{passive:false});
     },2000);
   },{passive:true});
+  /* touchmove — non-passive từ đầu để iOS cho phép preventDefault khi drag */
   document.addEventListener('touchmove',function(e){
-    if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; }
-  },{passive:true});
+    if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; return; }
+    if(!drag) return;
+    e.preventDefault();
+    var y=e.touches[0].clientY;
+    drag.ghost.style.top=(drag.ghostTop+y-drag.startY)+'px';
+    var ti=insertIdx(drag.rows,y);
+    clearInd(drag.rows);
+    if(ti<drag.rows.length) drag.rows[ti].classList.add('drag-ind-top');
+    else if(drag.rows.length) drag.rows[drag.rows.length-1].classList.add('drag-ind-bot');
+    drag.curTarget=ti;
+  },{passive:false});
   document.addEventListener('touchend',function(){
     clearTimeout(pressTimer); pressTimer=null;
     if(!drag) return;
