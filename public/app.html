@@ -501,10 +501,10 @@ h3{font-size:15px}
       <button type="button" data-lv="att" aria-pressed="false">Điểm danh</button>
     </div>
     <div id="lvList">
-    <div class="sec-head"><h2>Danh sách ba mẹ</h2><span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><span class="count" id="bmCount"></span><button type="button" class="btn ghost sm" id="bmSortTog" aria-pressed="false" aria-label="Sắp xếp" title="Sắp xếp">↕️<span class="lbl"> Sắp xếp</span></button><button type="button" class="btn ghost sm bin-btn" id="binBtn" aria-label="Dustbin" title="Dustbin"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span class="lbl">Dustbin</span><span id="binCount"></span></button></span></div>
+    <div class="sec-head"><h2>Danh sách ba mẹ</h2><span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><span class="count" id="bmCount"></span><button type="button" class="btn ghost sm bin-btn" id="binBtn" aria-label="Dustbin" title="Dustbin"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span class="lbl">Dustbin</span><span id="binCount"></span></button></span></div>
     <div style="height:12px"></div>
     <input id="bmSearch" type="search" placeholder="Tìm theo tên ba mẹ, SĐT, tên bệnh, thiết bị…">
-    <div id="bmSortTip" class="notice" hidden style="background:#fff3e0;border:1px solid var(--warm);color:#5a2b00">Đang chế độ sắp xếp: dùng nút ↑ ↓ để di chuyển ba mẹ. Thứ tự này cũng được áp dụng ở phần Kế hoạch. Bấm "Xong" để thoát.</div>
+    <div id="bmSortTip" hidden></div>
     <div class="alerts" id="bmAlerts"></div>
     <div class="to-filter" id="bmListTo"></div>
     <div id="bmList"></div>
@@ -900,7 +900,7 @@ function lastContactMap(){ const m=new Map(), t=today(); all("logs").forEach(l=>
 function sinceDays(p,lc){ const last=lc.get(p._sid+"|"+p.id) || (p.createdAt?ymd(new Date(p.createdAt)):null); return last==null?null:daysBetween(last,today()); }
 function nextBday(p){ if(!p.ngaySinh) return null; const [,m,d]=p.ngaySinh.split("-").map(Number); if(!m||!d) return null; const t=today(), y=Number(t.slice(0,4)); let c=ymd(new Date(y,m-1,d)); if(c<t) c=ymd(new Date(y+1,m-1,d)); return {date:c, in:daysBetween(t,c)}; }
 const xlHtml=(sid,l)=> !l.baoCao ? "" : !S.isMgr ? `<span class="chip ${l.xuLy?"ok":"amber"}">${l.xuLy?"Đã xử lý":"Chưa xử lý"}</span>${l.xuLy?`<span>${esc(staffName(l.xuLyBy))}</span>`:""}` : `<button type="button" class="xl-btn ${l.xuLy?"done":""}" data-xl="${esc(sid)}|${esc(l.id)}">${l.xuLy?"Đã xử lý":"Chưa xử lý"}</button><span>${l.xuLy?`${esc(staffName(l.xuLyBy))}${l.xuLyAt?" · "+fmtShort(ymd(new Date(l.xuLyAt))):""}`:"Bấm vào khi đã xử lý xong"}</span>`;
-S.overdueDays=3; S.onlyOverdue=false; S.chartPart="Tren"; S.rv="day"; S.repLoai="all"; S.sortMode=false;
+S.overdueDays=3; S.onlyOverdue=false; S.chartPart="Tren"; S.rv="day"; S.repLoai="all";
 
 /* ---------- Boot (Firebase) ---------- */
 /* Đăng nhập cùng tên miền với app (tránh lỗi trình duyệt chặn cookie khác tên miền) */
@@ -1514,7 +1514,6 @@ async function reorderParent(sid,pid,dir){
   }catch(e){ console.warn(e); toast("Chưa lưu được thứ tự"); }
 }
 document.addEventListener("click", e=>{
-  const t=e.target.closest("#bmSortTog"); if(t){ S.sortMode=!S.sortMode; t.setAttribute("aria-pressed",S.sortMode); t.innerHTML=S.sortMode?'✓<span class="lbl"> Xong</span>':'↕️<span class="lbl"> Sắp xếp</span>'; $("bmSortTip").hidden=!S.sortMode; renderAll(); return; }
   const m=e.target.closest("[data-mv]"); if(m){ const [sid,pid]=m.dataset.mk.split("|"); reorderParent(sid,pid,m.dataset.mv); return; }
 });
 function renderParents(loai, listId, countId, searchId){
@@ -1563,16 +1562,6 @@ function renderParents(loai, listId, countId, searchId){
     benhList(p).forEach(b=>{ if(b.ten) chips.push(`<span class="chip mute">${esc(b.ten)}</span>`); });
     if(multi) chips.push(`<span class="chip mute">${esc(staffName(p._sid))}</span>`);
     const sub=[p.sdt, p.ngaySinh?("SN "+fmtShort(p.ngaySinh)):""].filter(Boolean).join(" · ");
-    if(listId==="bmList" && S.sortMode){
-      return `<div class="row" style="cursor:default">
-        <span class="avatar ${p.loai==="tiem_nang"?"pot":""}">${esc(initials(p.tenBaMe))}</span>
-        <span class="row-main"><span class="row-title">${esc(p.tenBaMe)}</span>${sub?`<span class="row-sub" style="display:block">${esc(sub)}</span>`:""}</span>
-        <span style="display:flex;gap:6px;flex-shrink:0">
-          <button type="button" class="btn ghost sm" style="padding:4px 10px;min-width:36px" data-mv="up" data-mk="${esc(p._sid)}|${esc(p.id)}" aria-label="Di chuyển lên">↑</button>
-          <button type="button" class="btn ghost sm" style="padding:4px 10px;min-width:36px" data-mv="down" data-mk="${esc(p._sid)}|${esc(p.id)}" aria-label="Di chuyển xuống">↓</button>
-        </span>
-      </div>`;
-    }
     return `<button class="row" data-open="${esc(p._sid)}|${esc(p.id)}">
       <span class="avatar ${p.loai==="tiem_nang"?"pot":""}">${esc(initials(p.tenBaMe))}</span>
       <span class="row-main"><span class="row-title">${esc(p.tenBaMe)}</span>
@@ -2612,14 +2601,16 @@ sheet.innerHTML=`
 <div class="ch-comp">
   <div class="ch-pop" id="chPop" hidden></div>
   <div class="ch-sel" id="chSel" hidden></div>
-  <div class="ch-box" id="chTnBox" hidden>
-    <div class="ch-tn">
-      <span></span><span class="h">Thân trên</span><span class="h">Thân dưới</span>
-      <span>Trước tập</span><input id="chTT" type="number" inputmode="decimal" step="0.1" placeholder="36.5" aria-label="Trước tập, thân trên"><input id="chTD" type="number" inputmode="decimal" step="0.1" placeholder="35.8" aria-label="Trước tập, thân dưới">
-      <span>Sau tập</span><input id="chST" type="number" inputmode="decimal" step="0.1" placeholder="36.9" aria-label="Sau tập, thân trên"><input id="chSD" type="number" inputmode="decimal" step="0.1" placeholder="36.4" aria-label="Sau tập, thân dưới">
+  <div class="ch-tnph" id="chTnPh">
+    <div class="ch-box" id="chTnBox" hidden>
+      <div class="ch-tn">
+        <span></span><span class="h">Thân trên</span><span class="h">Thân dưới</span>
+        <span>Trước tập</span><input id="chTT" type="number" inputmode="decimal" step="0.1" placeholder="37" aria-label="Trước tập, thân trên"><input id="chTD" type="number" inputmode="decimal" step="0.1" placeholder="37" aria-label="Trước tập, thân dưới">
+        <span>Sau tập</span><input id="chST" type="number" inputmode="decimal" step="0.1" placeholder="37" aria-label="Sau tập, thân trên"><input id="chSD" type="number" inputmode="decimal" step="0.1" placeholder="37" aria-label="Sau tập, thân dưới">
+      </div>
     </div>
+    <div class="ch-box" id="chPhBox" hidden><textarea id="chPh" maxlength="200" placeholder="PƯPH…" aria-label="Mô tả phản ứng phục hồi" rows="1" style="width:100%;resize:none;overflow:hidden"></textarea></div>
   </div>
-  <div class="ch-box" id="chPhBox" hidden><input id="chPh" type="text" maxlength="200" placeholder="Phản ứng phục hồi của ba mẹ (PƯPH)…" aria-label="Mô tả phản ứng phục hồi" style="width:100%"></div>
   <p class="ch-err" id="chErr" hidden></p>
   <div class="ch-crow">
     <button type="button" class="ch-ic" id="chAtBtn" aria-label="Chọn ba mẹ" style="font-weight:800">@</button>
@@ -2691,10 +2682,10 @@ const hidePop=()=>{ $("chPop").hidden=true; ch.list=[]; };
 function pick(i){
   const r=ch.list[i]; if(!r) return; const a=atQuery(), t=$("chTxt");
   if(a){ t.value=t.value.slice(0,a.start)+t.value.slice(a.end); t.selectionStart=t.selectionEnd=a.start; }
-  ch.sel={sid:r.p._sid,id:r.p.id}; hidePop(); renderSel(); err(""); growTxt(); t.focus();
+  ch.sel={sid:r.p._sid,id:r.p.id}; hidePop(); renderSel(); err(""); growTxt(); try{ $("chTT").focus(); }catch(e){ t.focus(); }
 }
 function renderSel(){
-  const el=$("chSel"); if(!ch.sel){ el.hidden=true; el.innerHTML=""; return; }
+  const el=$("chSel"); $("chTnBox").hidden=!ch.sel; $("chPhBox").hidden=!ch.sel; if(!ch.sel){ el.hidden=true; el.innerHTML=""; return; }
   const p=parentOf(ch.sel.sid,ch.sel.id); if(!p){ ch.sel=null; el.hidden=true; return; }
   const pl=plansOf(ch.sel.sid,ch.sel.id,today());
   const yd=addDays(today(),-1), yl=(((S.data[ch.sel.sid]||{}).logs)||[]).filter(l=>l.parentId===ch.sel.id&&l.date===yd).sort((a,b)=>logTs(a)-logTs(b));
@@ -2702,10 +2693,11 @@ function renderSel(){
   el.hidden=false;
   el.innerHTML=`<div class="sth"><span>@${esc(p.tenBaMe||"Ba mẹ")}</span><button type="button" class="prof" id="chSelProf">👤 Hồ sơ</button><button type="button" id="chSelX" aria-label="Bỏ chọn ba mẹ">✕</button></div><div class="pl"><b style="font-size:12px">📋 Kế hoạch đã soạn hôm nay</b>${pl.length?pl.map(x=>`<div class="${x.done?"done":""}">${x.done?"☑":"☐"} ${esc(x.noiDung)}</div>`).join(""):`<div><i>Chưa có kế hoạch hôm nay (soạn ở tab Kế hoạch)</i></div>`}<b style="font-size:12px;display:block;margin-top:6px">⚠️ Vấn đề đã báo cáo hôm qua</b>${ytxt.length?ytxt.map(x=>`<div>• ${esc(x)}</div>`).join(""):`<div><i>${yl.length?"Hôm qua không có vấn đề":"Hôm qua chưa có báo cáo"}</i></div>`}</div>`;
   $("chSelProf").onclick=()=>{ if(ch.sel) openDetail(ch.sel.sid,ch.sel.id); };
-  $("chSelX").onclick=()=>{ ch.sel=null; renderSel(); };
+  $("chSelX").onclick=()=>{ ch.sel=null; ["chTT","chTD","chST","chSD","chPh"].forEach(i=>$(i).value=""); renderSel(); };
 }
 function onInput(){ growTxt(); const a=atQuery(); if(a) showPop(a.q); else hidePop(); }
 function growTxt(){ const t=$("chTxt"); t.style.setProperty("height","34px","important"); const h=Math.max(34,Math.min(t.scrollHeight,150)); t.style.setProperty("height",h+"px","important"); t.style.overflowY=t.scrollHeight>150?"auto":"hidden"; }
+function growPh(){ const t=$("chPh"); t.style.height="auto"; t.style.height=t.scrollHeight+"px"; }
 
 /* ----- Mở / đóng ----- */
 function resetComposer(){
@@ -2758,6 +2750,7 @@ $("chBack").onclick=closeChat;
 $("chTxt").addEventListener("compositionstart",()=>{ ch.comp=true; });
 $("chTxt").addEventListener("compositionend",()=>{ ch.comp=false; if(ch.pend){ ch.pend=false; setTimeout(send,0); } });
 $("chTxt").oninput=onInput;
+$("chPh").oninput=growPh;
 $("chTxt").onkeyup=e=>{ if(["ArrowLeft","ArrowRight","Home","End"].includes(e.key)) onInput(); };
 $("chTxt").onkeydown=e=>{
   const open=!$("chPop").hidden&&ch.list.length;
@@ -2770,17 +2763,8 @@ $("chPop").onclick=e=>{ const b=e.target.closest("[data-pick]"); if(b) pick(+b.d
 $("chAtBtn").onclick=()=>{ const t=$("chTxt"); const pos=t.selectionStart??t.value.length; const pre=t.value.slice(0,pos), sp=pre&&!/\s$/.test(pre)?" ":""; t.value=pre+sp+"@"+t.value.slice(pos); t.selectionStart=t.selectionEnd=pos+sp.length+1; t.focus(); onInput(); };
 $("chTnBtn").onclick=()=>{ const on=$("chTnBox").hidden; $("chTnBox").hidden=!on; $("chTnBtn").classList.toggle("on",on); $("chTnBtn").setAttribute("aria-pressed",String(on)); if(on) $("chTT").focus(); };
 $("chPhBtn").onclick=()=>{ const on=$("chPhBox").hidden; $("chPhBox").hidden=!on; $("chPhBtn").classList.toggle("on",on); $("chPhBtn").setAttribute("aria-pressed",String(on)); if(on) $("chPh").focus(); };
-/* Gọn thanh soạn tin: nút ＋ mở khay Thân nhiệt / PƯPH, còn @ và ô nhắn tin rộng hơn */
-{ const crow=document.querySelector("#chatSheet .ch-crow"), tray=document.createElement("div"), more=document.createElement("button");
-  tray.className="ch-tray"; tray.id="chTray"; tray.hidden=true;
-  $("chTnBtn").innerHTML="🌡️ Thân nhiệt"; $("chPhBtn").innerHTML="PƯPH";
-  tray.append($("chTnBtn"),$("chPhBtn")); crow.parentNode.insertBefore(tray,crow);
-  more.type="button"; more.className="ch-ic"; more.id="chMoreBtn"; more.setAttribute("aria-label","Thêm: thân nhiệt, PƯPH"); more.setAttribute("aria-expanded","false"); more.textContent="＋";
-  $("chAtBtn").after(more);
-  const sync=()=>{ const open=!tray.hidden, used=!$("chTnBox").hidden||!$("chPhBox").hidden; more.classList.toggle("on",open||used); more.setAttribute("aria-expanded",String(open)); more.textContent=open?"✕":"＋"; };
-  more.onclick=()=>{ tray.hidden=!tray.hidden; sync(); };
-  [$("chTnBtn"),$("chPhBtn")].forEach(b=>b.addEventListener("click",()=>{ tray.hidden=true; sync(); }));
-  window.chTraySync=()=>{ tray.hidden=true; sync(); }; }
+/* Thân nhiệt và PƯPH tự hiện khi chọn ba mẹ bằng @ (xem renderSel), nên không cần nút riêng */
+$("chTnBtn").hidden=true; $("chPhBtn").hidden=true;
 $("chSend").onclick=send;
 $("chThread").onclick=e=>{ if(e.target.closest("#chMore")){ const el=$("chThread"), h0=el.scrollHeight; ch.show+=40; renderThread(false); el.scrollTop=el.scrollHeight-h0; } };
 /* mở app lên là vào ngay khung "Báo cáo vấn đề" */
@@ -3000,4 +2984,94 @@ main{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
 #chatSheet .ch-crow{align-items:flex-end!important}
 #chatSheet .ch-crow .ch-ic,#chatSheet .ch-send{align-self:flex-end}
 #chatSheet .ch-crow:has(textarea[style*="height: 6"]),#chatSheet .ch-crow{border-radius:20px}
+</style>
+<style id="drag-reorder">
+/* Long-press drag-to-reorder ba mẹ */
+.drag-ghost{position:fixed;z-index:9999;pointer-events:none;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.22);background:#fff;transform:scale(1.025);transition:none}
+.drag-dim{opacity:.2!important;transition:opacity .15s}
+.drag-ind-top{box-shadow:inset 0 2px 0 0 #ee0033!important}
+.drag-ind-bot{box-shadow:inset 0 -2px 0 0 #ee0033!important}
+</style>
+<script>
+(function(){
+  var pressTimer=null, drag=null;
+  function rowsOf(el){ var l=el.closest('#bmList .list'); return l?[...l.querySelectorAll('.row[data-open]')]:null; }
+  function insertIdx(rows,y){ for(var i=0;i<rows.length;i++){ var r=rows[i].getBoundingClientRect(); if(y<r.top+r.height/2) return i; } return rows.length; }
+  function clearInd(rows){ rows.forEach(function(r){ r.classList.remove('drag-ind-top','drag-ind-bot'); }); }
+  function cleanup(){
+    if(!drag) return;
+    document.removeEventListener('touchmove',onDragMove);
+    drag.ghost.remove();
+    drag.el.classList.remove('drag-dim');
+    clearInd(drag.rows);
+    drag=null;
+  }
+  function onDragMove(e){
+    if(!drag) return;
+    e.preventDefault();
+    var y=e.touches[0].clientY;
+    drag.ghost.style.top=(drag.ghostTop+y-drag.startY)+'px';
+    var ti=insertIdx(drag.rows,y);
+    clearInd(drag.rows);
+    if(ti<drag.rows.length) drag.rows[ti].classList.add('drag-ind-top');
+    else if(drag.rows.length) drag.rows[drag.rows.length-1].classList.add('drag-ind-bot');
+    drag.curTarget=ti;
+  }
+  document.addEventListener('touchstart',function(e){
+    var row=e.target.closest&&e.target.closest('#bmList .row[data-open]');
+    if(!row) return;
+    clearTimeout(pressTimer);
+    var startY=e.touches[0].clientY;
+    pressTimer=setTimeout(function(){
+      pressTimer=null;
+      var rows=rowsOf(row);
+      if(!rows) return;
+      var fromIdx=rows.indexOf(row);
+      if(fromIdx<0) return;
+      navigator.vibrate&&navigator.vibrate(45);
+      var rect=row.getBoundingClientRect();
+      var ghost=row.cloneNode(true);
+      ghost.removeAttribute('data-open');
+      ghost.style.cssText='position:fixed;z-index:9999;pointer-events:none;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.22);background:#fff;transform:scale(1.025);transition:none;left:'+rect.left+'px;top:'+rect.top+'px;width:'+rect.width+'px;height:'+rect.height+'px';
+      document.body.appendChild(ghost);
+      row.classList.add('drag-dim');
+      drag={el:row,ghost:ghost,rows:rows,fromIdx:fromIdx,ghostTop:rect.top,startY:startY,curTarget:fromIdx};
+      document.addEventListener('touchmove',onDragMove,{passive:false});
+    },2000);
+  },{passive:true});
+  document.addEventListener('touchmove',function(e){
+    if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; }
+  },{passive:true});
+  document.addEventListener('touchend',function(){
+    clearTimeout(pressTimer); pressTimer=null;
+    if(!drag) return;
+    var fromIdx=drag.fromIdx, toIdx=drag.curTarget, rows=drag.rows;
+    cleanup();
+    var insertAt=toIdx>fromIdx?toIdx-1:toIdx;
+    if(insertAt===fromIdx) return;
+    var items=rows.map(function(r){ var p=r.dataset.open.split('|'); return all('parents').find(function(x){ return x._sid===p[0]&&x.id===p[1]; }); }).filter(Boolean);
+    var moved=items.splice(fromIdx,1)[0];
+    items.splice(Math.min(insertAt,items.length),0,moved);
+    var batch=S.db.batch();
+    items.forEach(function(p,idx){ batch.update(S.db.doc('staff/'+p._sid+'/parents/'+p.id),{sortOrder:(idx+1)*10,updatedAt:Date.now()}); });
+    batch.commit().then(function(){ toast('Đã cập nhật thứ tự'); }).catch(function(){ toast('Chưa lưu được thứ tự'); });
+  },{passive:true});
+  document.addEventListener('touchcancel',function(){ clearTimeout(pressTimer); pressTimer=null; cleanup(); },{passive:true});
+})();
+</script>
+<style id="tn-compact">
+/* Hàng ngang: thân nhiệt trái, PƯPH phải */
+#chatSheet .ch-tnph{display:flex;gap:5px;align-items:stretch;margin:0 0 3px}
+#chatSheet .ch-tnph .ch-box{margin:0!important}
+/* Thân nhiệt: gọn bên trái */
+#chatSheet #chTnBox{flex-shrink:0;padding:4px 6px!important;border-radius:10px!important}
+#chatSheet .ch-tn{gap:2px 5px!important;font-size:11px!important;grid-template-columns:auto auto auto!important}
+#chatSheet .ch-tn input{padding:2px 4px!important;font-size:13px!important;border-radius:5px!important;height:26px!important;min-height:0!important;width:52px!important}
+#chatSheet .ch-tn input::-webkit-inner-spin-button,#chatSheet .ch-tn input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+#chatSheet .ch-tn input[type=number]{-moz-appearance:textfield}
+#chatSheet .ch-tn .h{font-size:10px!important}
+/* PƯPH: flex 1 bên phải, textarea trong suốt, khung là ch-box */
+#chatSheet #chPhBox{flex:1;padding:6px 8px!important;border-radius:10px!important;display:flex;align-items:flex-start;border:1px solid var(--line)!important;background:var(--surface)!important}
+#chatSheet .ch-tnph .ch-box[hidden]{display:none!important}
+#chatSheet #chPhBox textarea{flex:1;height:auto!important;min-height:26px!important;padding:0!important;font-size:13px!important;border-radius:0!important;resize:none!important;overflow:hidden!important;border:none!important;background:transparent!important;color:var(--ink)!important;line-height:1.4;box-shadow:none!important;outline:none!important}
 </style>
