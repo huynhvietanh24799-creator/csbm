@@ -1,5 +1,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#05070d">
+<meta name="theme-color" content="#ee0033">
+<script>document.documentElement.setAttribute("data-theme","light")</script>
 <meta name="app-v" content="25">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Sổ CSKH">
@@ -500,7 +501,7 @@ h3{font-size:15px}
       <button type="button" data-lv="att" aria-pressed="false">Điểm danh</button>
     </div>
     <div id="lvList">
-    <div class="sec-head"><h2>Danh sách ba mẹ</h2><span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><span class="count" id="bmCount"></span><button type="button" class="btn ghost sm" id="bmSortTog" aria-pressed="false">↕️ Sắp xếp</button><button type="button" class="btn ghost sm bin-btn" id="binBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Dustbin<span id="binCount"></span></button></span></div>
+    <div class="sec-head"><h2>Danh sách ba mẹ</h2><span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><span class="count" id="bmCount"></span><button type="button" class="btn ghost sm" id="bmSortTog" aria-pressed="false" aria-label="Sắp xếp" title="Sắp xếp">↕️<span class="lbl"> Sắp xếp</span></button><button type="button" class="btn ghost sm bin-btn" id="binBtn" aria-label="Dustbin" title="Dustbin"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span class="lbl">Dustbin</span><span id="binCount"></span></button></span></div>
     <div style="height:12px"></div>
     <input id="bmSearch" type="search" placeholder="Tìm theo tên ba mẹ, SĐT, tên bệnh, thiết bị…">
     <div id="bmSortTip" class="notice" hidden style="background:#fff3e0;border:1px solid var(--warm);color:#5a2b00">Đang chế độ sắp xếp: dùng nút ↑ ↓ để di chuyển ba mẹ. Thứ tự này cũng được áp dụng ở phần Kế hoạch. Bấm "Xong" để thoát.</div>
@@ -1513,7 +1514,7 @@ async function reorderParent(sid,pid,dir){
   }catch(e){ console.warn(e); toast("Chưa lưu được thứ tự"); }
 }
 document.addEventListener("click", e=>{
-  const t=e.target.closest("#bmSortTog"); if(t){ S.sortMode=!S.sortMode; t.setAttribute("aria-pressed",S.sortMode); t.textContent=S.sortMode?"✓ Xong":"↕️ Sắp xếp"; $("bmSortTip").hidden=!S.sortMode; renderAll(); return; }
+  const t=e.target.closest("#bmSortTog"); if(t){ S.sortMode=!S.sortMode; t.setAttribute("aria-pressed",S.sortMode); t.innerHTML=S.sortMode?'✓<span class="lbl"> Xong</span>':'↕️<span class="lbl"> Sắp xếp</span>'; $("bmSortTip").hidden=!S.sortMode; renderAll(); return; }
   const m=e.target.closest("[data-mv]"); if(m){ const [sid,pid]=m.dataset.mk.split("|"); reorderParent(sid,pid,m.dataset.mv); return; }
 });
 function renderParents(loai, listId, countId, searchId){
@@ -1551,7 +1552,7 @@ function renderParents(loai, listId, countId, searchId){
     const pp = plans.filter(x=>x.parentId===p.id && x._sid===p._sid);
     const lg = logs.find(x=>x.parentId===p.id && x._sid===p._sid);
     const chips=[];
-    const sd=sinceDays(p,lc); if(sd!=null && sd>=N) chips.push(`<span class="chip warm">${sd} ngày chưa hỏi thăm</span>`);
+    const sd=sinceDays(p,lc); if(sd!=null && sd>=N) chips.push(`<span class="chip ${sd>=Math.max(7,N*2)?"late":"warm"}">${sd} ngày chưa hỏi thăm</span>`);
     const bd=nextBday(p); if(bd && bd.in<=6) chips.push(`<span class="chip amber">${bd.in===0?"Sinh nhật hôm nay":"Sinh nhật "+fmtShort(bd.date).slice(0,5)}</span>`);
     if(loai==="chinh_thuc" && p.loai==="tiem_nang") chips.push(`<span class="chip amber">Tiềm năng</span>`);
     {
@@ -2598,7 +2599,7 @@ const st=document.createElement("style"); st.textContent=css; document.head.appe
 const tabsNav=document.getElementById("tabs");
 const btn=document.createElement("button");
 btn.type="button"; btn.className="tab"; btn.id="chatBtn"; btn.setAttribute("role","tab"); btn.setAttribute("aria-selected","false");
-btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/></svg><span>Chat</span>';
+btn.setAttribute("aria-label","Chat"); btn.innerHTML='<svg viewBox="0 0 64 56" aria-hidden="true"><defs><linearGradient id="cgBig" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5c8a"/><stop offset="1" stop-color="#ee0033"/></linearGradient><linearGradient id="cgSm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ffe0e8"/></linearGradient></defs><path d="M30 3C14 3 2 12 2 24c0 6 3 11 8 15-1 4-3 7-6 9 6 0 11-2 15-5 3 1 7 1 11 1 16 0 28-9 28-20S46 3 30 3z" fill="url(#cgBig)"/><text x="29" y="27" text-anchor="middle" font-family="Be Vietnam Pro,system-ui,sans-serif" font-weight="800" font-size="14.5" letter-spacing=".5" fill="#fff">CỌC</text><path d="M44 27c-10 0-18 5-18 12s8 12 18 12c2 0 4 0 6-1 3 2 6 3 10 3-2-2-3-4-4-6 4-2 6-5 6-8 0-7-8-12-18-12z" fill="url(#cgSm)" stroke="#fff" stroke-width="2"/><circle cx="37" cy="39" r="2.3" fill="#f08aa3"/><circle cx="44" cy="39" r="2.3" fill="#f08aa3"/><circle cx="51" cy="39" r="2.3" fill="#f08aa3"/></svg>';
 tabsNav.insertBefore(btn,tabsNav.querySelector('[data-tab="input"]')||null);
 
 const sheet=document.createElement("div"); sheet.className="sheet"; sheet.id="chatSheet"; sheet.hidden=true;
@@ -2771,113 +2772,99 @@ setInterval(()=>{ if(sheet.hidden||document.hidden) return; const s=sigOf(); if(
 })({openDetail,S,$,esc,pad,today,addDays,all,parentOf,plansOf,staffName,fmtDay,logTime,logTs,quick,toast,renderAll});
 
 });
-</script><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
-<style id="tech-theme">
-:root,:root[data-theme="light"],:root[data-theme="dark"]{
-  --bg:#05070d; --surface:#0f1524; --ink:#e8eefc; --muted:#8b97b3; --line:rgba(120,160,255,.14);
-  --accent:#ff3d57; --accent-soft:rgba(255,61,87,.14); --accent-ink:#fff;
-  --warm:#ff8a3d; --warm-soft:rgba(255,138,61,.14); --ok:#2ef2a0; --ok-soft:rgba(46,242,160,.12);
-  --amber:#ffc83d; --amber-soft:rgba(255,200,61,.13);
-  --hdr1:#ff3d57; --hdr2:#7a5cff; --shadow:rgba(0,0,0,.5);
-  --f-display:"Space Grotesk",system-ui,sans-serif; --r:18px; --c-before:#3dd6ff; --c-after:#ff3d57;
-  --glow:0 0 0 1px rgba(255,61,87,.35),0 8px 30px -8px rgba(255,61,87,.55);
-  color-scheme:dark;
+</script>
+<style id="simple-theme">
+/* Giao diện đơn giản: nền sáng ấm, tông đỏ gradient, bo góc nhẹ */
+:root,:root[data-theme="light"]{
+  --bg:#fff6f5; --surface:#ffffff; --ink:#2b1618; --muted:#7a5f62; --line:#f2dedc;
+  --accent:#d92d3a; --accent-soft:#fde8e8; --accent-ink:#ffffff;
+  --warm:#c2410c; --warm-soft:#fff1e6; --ok:#15803d; --ok-soft:#e7f6ec; --amber:#a16207; --amber-soft:#fef6dc;
+  --hdr1:#c81e28; --hdr2:#f2574b; --hdr-ink:#ffffff; --hdr-soft:#ffe3e1; --shadow:rgba(200,30,40,.10);
+  --grad:linear-gradient(135deg,#c81e28,#f2574b);
+  --f-display:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif; --r:14px; --c-before:#2f6fbf; --c-after:#d92d3a;
+  color-scheme:light;
 }
-html{background:#05070d}
-body{background:
-  radial-gradient(900px 500px at 10% -10%,rgba(255,61,87,.18),transparent 60%),
-  radial-gradient(800px 600px at 110% 10%,rgba(61,214,255,.14),transparent 60%),
-  radial-gradient(700px 500px at 50% 120%,rgba(122,92,255,.16),transparent 60%),#05070d!important;
-  background-attachment:fixed!important;color:var(--ink)}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-  background-image:linear-gradient(rgba(120,160,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,255,.05) 1px,transparent 1px);
-  background-size:36px 36px;mask-image:radial-gradient(ellipse at center,#000 30%,transparent 80%)}
-body::before{z-index:-1}
-.pv-bar{background:linear-gradient(90deg,#0b1020,#151b33)!important;border-bottom:1px solid var(--line);font-family:"JetBrains Mono",monospace!important;letter-spacing:.04em;color:#9fb3ff!important}
-.pv-sw{background:rgba(255,255,255,.05)!important;border:1px solid var(--line)}
-.pv-sw a{color:#c7d2f0!important}.pv-sw a.on{background:linear-gradient(135deg,#ff3d57,#7a5cff)!important;color:#fff!important;box-shadow:var(--glow)}
-.top{background:rgba(5,7,13,.65)!important;backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid var(--line)!important}
-.top::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,#ff3d57,#3dd6ff,transparent);opacity:.7}
-.brand{background:linear-gradient(90deg,#fff,#ffb3be 50%,#9fdcff);-webkit-background-clip:text;background-clip:text;color:transparent!important}
-.brand small{-webkit-text-fill-color:var(--muted);font-family:"JetBrains Mono",monospace!important;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
-.brand-logo{filter:drop-shadow(0 0 10px rgba(255,61,87,.6))}
-h1,h2,h3{letter-spacing:-.02em}
-.sec-head h2{background:linear-gradient(90deg,#fff,#9fb3ff);-webkit-background-clip:text;background-clip:text;color:transparent}
-.count,.stat b,.tn-in,.ts{font-family:"JetBrains Mono",monospace!important}
-.panel,.stat,.alert,.msg-card,.br-card,.plan,.ss-panel,.seg,.list,.cbtn,.datebar{
-  background:var(--surface)!important;border:1px solid var(--line)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 10px 40px -20px rgba(0,0,0,.8)}
-.panel,.list{border-radius:var(--r)!important;position:relative}
-.panel::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;pointer-events:none;
-  background:linear-gradient(135deg,rgba(255,61,87,.5),transparent 35%,transparent 65%,rgba(61,214,255,.45));
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
-.stat{transition:transform .25s,box-shadow .25s;overflow:hidden;position:relative}
-.stat::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(#ff3d57,#7a5cff)}
-.stat:hover{box-shadow:var(--glow)}
-.stat b{color:#fff;text-shadow:0 0 18px rgba(61,214,255,.45)}
-.stat.warn b{color:var(--warm);text-shadow:0 0 18px rgba(255,138,61,.5)}
-.btn{background:linear-gradient(135deg,#ff3d57,#ff6b3d)!important;color:#fff!important;border-radius:12px!important;box-shadow:var(--glow);transition:transform .15s,filter .2s,box-shadow .2s;letter-spacing:.01em}
-.btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
-.btn:active{transform:scale(.97)}
-.btn.ghost{background:var(--accent-soft)!important;color:#ff8899!important;box-shadow:inset 0 0 0 1px rgba(255,61,87,.35)}
-.btn.line{background:rgba(255,255,255,.03)!important;color:var(--ink)!important;box-shadow:inset 0 0 0 1px var(--line);border:0!important}
-.btn.line:hover{box-shadow:inset 0 0 0 1px rgba(61,214,255,.6),0 0 20px -6px rgba(61,214,255,.6)}
-.btn.danger{background:var(--warm-soft)!important;color:var(--warm)!important;box-shadow:inset 0 0 0 1px rgba(255,138,61,.35)}
-.seg button[aria-pressed="true"]{background:linear-gradient(135deg,#ff3d57,#7a5cff)!important;color:#fff!important;box-shadow:var(--glow)}
-.row{transition:background .2s}
-.row:hover{background:linear-gradient(90deg,rgba(255,61,87,.10),transparent)!important}
-.avatar{background:linear-gradient(135deg,rgba(255,61,87,.25),rgba(122,92,255,.25))!important;color:#fff!important;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 0 16px -4px rgba(255,61,87,.6)}
-.avatar.pot{background:linear-gradient(135deg,rgba(255,200,61,.3),rgba(255,138,61,.2))!important}
-.chip{border:1px solid currentColor;border-color:color-mix(in oklab,currentColor 35%,transparent);font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.02em}
-.chip:not(.amber):not(.warm):not(.ok):not(.mute){color:#ff8899}
-.role{background:rgba(61,214,255,.12)!important;color:#7fe3ff!important;border:1px solid rgba(61,214,255,.35);font-family:"JetBrains Mono",monospace}
-.role.boss{background:var(--amber-soft)!important;color:var(--amber)!important;border-color:rgba(255,200,61,.4)}
-.alert.newbm{background:rgba(61,140,255,.12)!important}
-.alert.late{background:rgba(255,61,87,.12)!important;border-color:rgba(255,61,87,.4)!important}
-.alert.absent,.alert.warn{background:var(--warm-soft)!important}
-.alert.bday{background:var(--amber-soft)!important}
-.notice{color:var(--muted)}
-.notice[style],#inApp{background:var(--amber-soft)!important;border-color:rgba(255,200,61,.35)!important;color:var(--amber)!important}
-.cbtn.call{background:rgba(46,242,160,.10)!important;border-color:rgba(46,242,160,.35)!important;color:#2ef2a0!important}
-.cbtn.zalo{background:rgba(61,140,255,.12)!important;border-color:rgba(61,140,255,.4)!important;color:#7fb2ff!important}
-.cbtn.cam{color:#ff8899!important}
-input,select,textarea{background:rgba(5,8,16,.7)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:12px!important;transition:border-color .2s,box-shadow .2s}
-input:focus,select:focus,textarea:focus{outline:none!important;border-color:rgba(61,214,255,.7)!important;box-shadow:0 0 0 3px rgba(61,214,255,.18),0 0 24px -6px rgba(61,214,255,.6)}
-select option{background:#0b1020}
-.tabs{background:rgba(10,14,26,.72)!important;backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--line)!important;box-shadow:0 -10px 40px -10px rgba(0,0,0,.8)}
-.tabs::before{content:"";position:absolute;left:10%;right:10%;top:-1px;height:1px;background:linear-gradient(90deg,transparent,#ff3d57,#3dd6ff,transparent)}
-.tab{transition:color .2s,background .2s}
-.tab[aria-selected="true"],.tab[aria-current],.tab.on,.tab.active{color:#fff!important;background:linear-gradient(180deg,rgba(255,61,87,.18),transparent)!important}
-.tab[aria-selected="true"] svg,.tab[aria-current] svg,.tab.on svg,.tab.active svg{filter:drop-shadow(0 0 6px #ff3d57);color:#ff5a70}
-.sheet{background:#070a13!important}
-.sheet-head{background:rgba(5,7,13,.7)!important;backdrop-filter:blur(16px);border-bottom:1px solid var(--line)!important}
-.empty{color:var(--muted);border:1px dashed var(--line)!important;border-radius:var(--r);background:rgba(255,255,255,.02)!important}
-#bootMsg b{background:linear-gradient(90deg,#ff3d57,#3dd6ff,#ff3d57);background-size:200%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:techshine 2s linear infinite}
-@keyframes techshine{to{background-position:200% 0}}
-@keyframes techin{from{opacity:0}to{opacity:1}}
-main>*{animation:techin .45s ease both}
-::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:linear-gradient(#ff3d57,#7a5cff);border-radius:9px}::-webkit-scrollbar-track{background:transparent}
-::selection{background:rgba(255,61,87,.4)}
-</style>
-<style>
-.zalo-grp{background:rgba(61,140,255,.14)!important;color:#7fb2ff!important;box-shadow:inset 0 0 0 1px rgba(61,140,255,.45)}
-.zalo-grp.cam-app{background:rgba(255,61,87,.14)!important;color:#ff8899!important;box-shadow:inset 0 0 0 1px rgba(255,61,87,.4)}
-.out-btn{border-color:rgba(120,160,255,.25)!important;color:#e8eefc!important;background:rgba(255,255,255,.04)!important}
-.stat span{font-family:var(--f-body)!important}
-.brand-wrap{min-width:0}
-main{overflow-x:clip}
-input[type=date],input[type=time]{color-scheme:dark}
-</style>
-<style>
-/* Chat: nút giữa, to và sáng nhất */
+html,body{background:var(--bg)!important;color:var(--ink)}
+.top{background:var(--grad)!important;color:#fff!important;border-bottom:0;box-shadow:0 4px 14px var(--shadow)}
+.top .brand small,.top .scope label{color:#ffe3e1!important}
+.top .role{background:rgba(255,255,255,.2);color:#fff}
+.top .role.boss{background:#fff;color:#c81e28}
+.top .btn.line{border:1px solid rgba(255,255,255,.7);color:#fff}
+.panel,.row,.stat,.today,.msg-card{background:var(--surface);box-shadow:0 1px 3px var(--shadow)}
+.btn{background:var(--grad);color:#fff;border-radius:12px;border:0}
+.btn.ghost{background:var(--surface);color:var(--accent);border:1px solid var(--line)}
+input,select,textarea{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:12px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.seg{background:#f8e7e5}
+.seg button[aria-pressed="true"]{background:var(--grad);color:#fff;box-shadow:0 2px 8px rgba(200,30,40,.3)}
+.tabs{background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -2px 12px var(--shadow)}
+.tab{color:var(--muted)}
+.tab[aria-selected="true"]{color:var(--accent);background:transparent}
+.tab[aria-selected="true"] svg{background:var(--accent-soft);color:var(--accent)}
+.sheet{background:var(--bg)}
+.sheet-head{background:var(--grad);color:#fff;border-bottom:0}
+.sheet-head .back,.sheet-head h2,.sheet-head .ch-title,.sheet-head small{color:#fff}
+.empty{background:var(--surface);border:1px dashed var(--line);color:var(--muted)}
+main>*{animation:none}
+.zalo-grp{background:rgba(255,255,255,.22);color:#fff;box-shadow:none}
+.zalo-grp.cam-app{background:rgba(255,255,255,.22);color:#fff}
+.out-btn{border:1px solid rgba(255,255,255,.7);color:#fff;background:transparent}
+.chip{background:var(--accent-soft);color:var(--accent)}
+.today::before,.today>:first-child{--x:0}
+/* Chat: nút tròn lớn ở giữa, gradient đỏ */
 .tabs{grid-template-columns:1fr 1fr 1.35fr 1fr 1fr!important;align-items:end;overflow:visible!important}
-#chatBtn{position:relative;color:#fff!important;font-weight:800;font-size:12.5px;gap:2px;margin-top:-18px;background:transparent!important}
-#chatBtn svg{width:58px!important;height:58px!important;padding:15px!important;border-radius:50%!important;color:#fff!important;background:linear-gradient(135deg,#ff3d57,#7a5cff)!important;box-shadow:0 0 0 4px rgba(10,14,26,.9),0 0 26px 4px rgba(255,61,87,.75),0 0 46px 8px rgba(122,92,255,.45)!important;filter:none!important;animation:chatglow 2.4s ease-in-out infinite}
-#chatBtn svg{flex:none!important;box-sizing:border-box!important;aspect-ratio:1/1;min-width:0}
-#chatBtn{height:auto!important;align-self:end}
-#chatBtn span{text-shadow:0 0 10px rgba(255,90,112,.9)}
-@keyframes chatglow{50%{box-shadow:0 0 0 4px rgba(10,14,26,.9),0 0 34px 8px rgba(255,61,87,.95),0 0 60px 14px rgba(122,92,255,.6)}}
+#chatBtn{position:relative;color:var(--accent)!important;font-weight:700;font-size:12.5px;gap:2px;margin-top:-18px;height:auto!important;align-self:end;background:transparent!important}
+#chatBtn svg{width:58px!important;height:58px!important;padding:15px!important;flex:none!important;box-sizing:border-box!important;border-radius:50%!important;color:#fff!important;background:var(--grad)!important;box-shadow:0 0 0 4px var(--surface),0 6px 16px rgba(200,30,40,.4)!important;filter:none!important;animation:none}
 @media (min-width:900px){#chatBtn svg{width:62px!important;height:62px!important;padding:16px!important}}
+/* Thu nhỏ thanh trên và thanh dưới */
+.top{padding:5px 12px 5px!important}
+.top .brand{font-size:15px!important}
+.top .brand small{font-size:11px!important;line-height:1.2}
+.brand-logo{width:30px!important;height:30px!important}
+#zaloGrp,#camApp,#signOut,.top .btn,.top .zalo-grp,.top .out-btn{min-height:34px!important;min-width:34px!important;height:34px;font-size:12px!important;padding-top:0!important;padding-bottom:0!important}
+.top .role{font-size:10px!important;padding:2px 7px!important}
+.top-row{gap:6px!important}
+.tabs{padding-top:2px!important;padding-bottom:calc(2px + env(safe-area-inset-bottom,0px))!important}
+.tab{min-height:40px!important;padding:2px 2px!important;font-size:10px!important;gap:0!important}
+.tab svg{width:42px!important;height:22px!important;padding:2px 11px!important}
+#chatBtn{min-height:0!important;margin-top:-14px!important;font-size:10.5px!important}
+#chatBtn svg{width:46px!important;height:46px!important;padding:12px!important;box-shadow:0 0 0 3px var(--surface),0 4px 12px rgba(200,30,40,.4)!important}
+main{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))!important}
+/* Thu nhỏ khung chat */
+#chatSheet .sheet-head{padding:4px 8px!important;min-height:0!important;gap:4px}
+#chatSheet .sheet-head .back{min-width:36px!important;min-height:36px!important;width:36px;height:36px;padding:0}
+#chatSheet .sheet-head .back svg{width:18px;height:18px}
+#chatSheet .ch-title b{font-size:15px!important;line-height:1.2}
+#chatSheet .ch-title small{font-size:10.5px!important;line-height:1.2}
+#chatSheet .ch-comp{padding:4px 6px calc(4px + env(safe-area-inset-bottom,0px))!important}
+#chatSheet .ch-ic,#chatSheet #chAtBtn,#chatSheet #chTnBtn{height:34px!important;min-width:34px!important;font-size:16px!important}
+#chatSheet .ch-send{width:36px!important;height:36px!important}
+#chatSheet .ch-send svg{width:22px!important;height:22px!important}
+#chatSheet .ch-comp textarea{height:34px!important;min-height:34px!important;padding:6px 4px!important;font-size:16px!important}
+#chatSheet .ch-thread{padding:8px 10px!important}
+/* Gọn tiêu đề danh sách, thẻ chào; nổi bật "Cần hỏi thăm"; quá hạn màu đỏ; mờ mép bộ lọc */
+.chip.late{background:#d92d3a;color:#fff}
+.chip.warm{background:#fff0e0;color:#b45309}
+.ts[data-go] span::after{content:" ›"}
+.ts.warn{background:var(--accent-soft);box-shadow:inset 0 0 0 1px rgba(217,45,58,.35)}
+.ts.warn b,.ts.warn span{color:var(--accent)}
+@media (max-width:600px){
+  .sec-head h2{font-size:17px!important;white-space:nowrap}
+  .sec-head{align-items:center!important;flex-wrap:nowrap}
+  .sec-head>span{flex-wrap:nowrap!important;gap:6px!important}
+  #bmSortTog .lbl,#binBtn .lbl{display:none}
+  #bmSortTog,#binBtn{min-width:42px;padding-inline:10px!important}
+  #binBtn{gap:2px!important}
+  .today{padding:10px 12px!important;gap:6px!important;margin-bottom:10px!important}
+  .today .prog,.today .today-msg{display:none}
+  .today-top h3{font-size:16px!important;margin:0}
+  .today-sub{font-size:11px!important}
+  .today .pct{font-size:18px!important}
+  .ts{padding:6px 8px!important}
+  .ts b{font-size:18px!important}
+  .ts span{font-size:11px!important}
+  .to-filter{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);padding-right:36px!important}
+}
 </style>
 <style>
 /* Tối ưu điện thoại */
@@ -2907,4 +2894,50 @@ button,a,select,summary,[role=tab],.row{touch-action:manipulation}
   .tab{font-size:10.5px}
   #chatBtn svg{width:52px!important;height:52px!important;padding:13px!important}
 }
+</style>
+<style id="chat-icon">
+/* Nút Chat: hai bong bóng, chữ CỌC ở giữa, không nhãn */
+#chatBtn{margin-top:-18px!important;margin-bottom:6px!important;min-height:0!important;height:auto!important;padding:0!important;align-self:end;background:transparent!important}
+#chatBtn svg{width:64px!important;height:56px!important;padding:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;filter:drop-shadow(0 3px 5px rgba(200,30,40,.35))!important;animation:none!important;color:inherit!important;flex:none!important}
+#chatBtn[aria-selected="true"] svg{filter:drop-shadow(0 0 0 #fff) drop-shadow(0 3px 7px rgba(200,30,40,.55))!important}
+@media (max-width:360px){#chatBtn svg{width:56px!important;height:49px!important}}
+</style>
+<style id="viettel-theme">
+/* Tông đỏ–hồng tươi, thẻ trắng bo tròn viền hồng, nút viên thuốc, thanh dưới nổi */
+:root,:root[data-theme="light"]{
+  --bg:#f5f5f8; --surface:#ffffff; --ink:#1d1d24; --muted:#6f6f7b; --line:#fbe3ea;
+  --accent:#ee0033; --accent-soft:#ffe6ec; --accent-ink:#fff;
+  --hdr1:#ee0033; --hdr2:#ff5c8a; --shadow:rgba(238,0,51,.10);
+  --grad:linear-gradient(120deg,#ee0033 0%,#f7144a 55%,#ff3d78 100%);
+  --r:20px; --c-after:#ee0033;
+}
+html,body{background:var(--bg)!important}
+.top{background:var(--grad)!important;opacity:1!important;border-radius:0 0 22px 22px!important;box-shadow:0 6px 18px rgba(238,0,51,.25)!important}
+.top .brand small,.top .scope label{color:#ffe3ea!important}
+.panel,.row,.stat,.today,.msg-card,.card,.alert{border:2px solid var(--line)!important;border-radius:20px!important;box-shadow:none!important}
+.today{border:2px solid #fbd5de!important}
+.ts{border-radius:14px!important;background:#fafafc!important}
+.ts.warn{background:#ffe6ec!important;box-shadow:inset 0 0 0 1px rgba(238,0,51,.3)!important}
+.btn{background:var(--grad)!important;border-radius:99px!important;color:#fff!important;border:0!important;box-shadow:0 4px 12px rgba(238,0,51,.28)}
+.btn.ghost{background:#ffe6ec!important;color:#ee0033!important;box-shadow:none!important}
+.btn.sm{border-radius:99px!important}
+.seg{background:#fff!important;border:2px solid var(--line);border-radius:99px!important;padding:3px}
+.seg button{border-radius:99px!important}
+.seg button[aria-pressed="true"]{background:var(--grad)!important;color:#fff!important;box-shadow:0 4px 10px rgba(238,0,51,.3)!important}
+input,select,textarea{border:2px solid var(--line)!important;border-radius:16px!important}
+input:focus,select:focus,textarea:focus{border-color:#ff5c8a!important;box-shadow:0 0 0 3px #ffe6ec!important}
+.chip{background:#ffe6ec;color:#ee0033}
+.chip.late{background:var(--grad);color:#fff}
+.chip.warm{background:#fff0e0;color:#b45309}
+.sheet-head{background:var(--grad)!important;border-radius:0 0 22px 22px}
+.avatar{background:#ffe6ec;color:#ee0033}
+.to-filter button,.to-filter .chip{border:2px solid var(--line);background:#fff;border-radius:99px}
+.to-filter .on,.to-filter [aria-pressed="true"],.to-filter .active{background:var(--grad)!important;color:#fff!important;border-color:transparent}
+/* Thanh dưới: viên thuốc nổi, kính mờ */
+.tabs{left:10px!important;right:10px!important;bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;width:auto!important;border:1px solid rgba(255,255,255,.7)!important;border-radius:30px!important;background:rgba(255,255,255,.82)!important;-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:0 8px 28px rgba(238,0,51,.18),0 2px 8px rgba(0,0,0,.08)!important;padding-bottom:2px!important}
+.tab[aria-selected="true"] svg{background:linear-gradient(135deg,#ffd6e0,#ffe9ee)!important;color:#ee0033!important}
+.tab[aria-selected="true"]{color:#ee0033!important}
+main{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
+@media (min-width:700px){.tabs{left:50%!important;right:auto!important;transform:translateX(-50%);width:min(560px,calc(100% - 20px))!important}}
+#chatBtn svg{filter:drop-shadow(0 4px 6px rgba(238,0,51,.4))!important}
 </style>
